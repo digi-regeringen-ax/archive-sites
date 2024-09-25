@@ -13,6 +13,14 @@ You can run the script using Node.js with various command-line arguments. The sc
 
 ### Example
 
+Parameter `url` is mandatory.
+
+```bash
+node script.js --url=www.site.ax
+```
+
+With all parameters:
+
 ```bash
 node script.js --url=example.com --chunk_size=100 --images_path=assets/images --chunks_path=output/chunks --all_pages_filename=complete.pdf
 ```
