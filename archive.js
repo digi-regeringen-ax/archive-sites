@@ -40,20 +40,11 @@ const argv = yargs(hideBin(process.argv))
         default: 'all_pages.pdf',
         description: 'Name of the file that holds all the pages',
     })
-
     .argv;
-
-const {url: PATH,
-    chunk_size: CHUNK_SIZE,
-    all_pages_filename: ALL_PAGES_FILE,
-    chunks_path: CHUNKS_PATH,
-    images_path: IMAGE_PATH,
-
-} = argv;
 
 console.log('Parameters: ', argv);
 
-if(!PATH) {
+if(!argv.url) {
     console.error('No URL given');
     process.exit();
 }
@@ -72,7 +63,7 @@ const needsLogin = {
  */
 
 
-const DOMAIN = `https://${PATH}`;
+const DOMAIN = `https://${argv.url}`;
 
 // Function to ensure the directory structure for the given URL path exists
 const createDirectoryFromUrl = async (urlString) => {
@@ -80,7 +71,7 @@ const createDirectoryFromUrl = async (urlString) => {
     const urlPath = new URL(urlString).pathname;
 
     // Convert URL pathname to a local file path
-    const filePath = path.join(process.cwd(), `/${PATH}/`, urlPath);
+    const filePath = path.join(process.cwd(), `/${argv.url}/`, urlPath);
 
     // Check if the directory already exists, if not create it
     return new Promise((resolve, reject) => {
@@ -248,7 +239,7 @@ async function splitPdf(pdfPath, chunkSize = 30, outputDir = './outputChunks') {
                 fullPage: true,
             });
             await page.screenshot({
-                path: `${PATH}/${IMAGE_PATH}/${urlToSlug(url)}.png`,
+                path: `${argv.url}/${argv.images_path}/${urlToSlug(url)}.png`,
                 fullPage: true,
             });
 
@@ -291,19 +282,19 @@ async function splitPdf(pdfPath, chunkSize = 30, outputDir = './outputChunks') {
     }
 
     await createDirectoryFromUrl(DOMAIN)
-    await createDirectoryFromUrl(`${DOMAIN}/${IMAGE_PATH}`);
+    await createDirectoryFromUrl(`${DOMAIN}/${argv.images_path}`);
 
     // Start crawling from the root URL up to 10 levels deep
     await crawl(DOMAIN, 10);
     // Pipe the output to a file
-    doc.pipe(fs.createWriteStream(`${PATH}/${ALL_PAGES_FILE}`));
+    doc.pipe(fs.createWriteStream(`${argv.url}/${argv.all_pages_filename}`));
 
     // Finalize the document
     doc.end();
 
     await browser.close();
 
-    await splitPdf(`${PATH}/${ALL_PAGES_FILE}`, CHUNK_SIZE, `${PATH}/${CHUNKS_PATH}`)
+    await splitPdf(`${argv.url}/${argv.all_pages_filename}`, argv.chunk_size, `${argv.url}/${argv.chunks_path}`)
 
 })();
 
